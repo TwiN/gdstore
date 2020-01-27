@@ -54,11 +54,19 @@ func TestPut(t *testing.T) {
 	checkValueForKey(t, store, "test3", []byte("hi"))
 }
 
+func TestPutNilValue(t *testing.T) {
+	store := New(TestStoreFile)
+	defer deleteStoreFile(store)
+	_ = store.Put("test", nil)
+	checkValueForKey(t, store, "test", nil)
+}
+
 func checkValueForKey(t *testing.T, store *GDStore, key string, expectedValue []byte) {
-	value, err := store.Get(key)
-	if err != nil {
-		t.Errorf("[%s] Shouldn't have returned error '%s'", t.Name(), err.Error())
-	} else if string(value) != string(expectedValue) {
+	value, exists := store.Get(key)
+	if !exists {
+		t.Errorf("[%s] Expected key '%s' to exist", t.Name(), key)
+	}
+	if string(value) != string(expectedValue) {
 		t.Errorf("[%s] Expected key '%s' to have value '%v', but had '%v' instead", t.Name(), key, expectedValue, value)
 	}
 }

@@ -3,13 +3,8 @@ package main
 import (
 	"bytes"
 	"encoding/gob"
-	"errors"
 	"io/ioutil"
 	"os"
-)
-
-var (
-	ErrNotFound = errors.New("no data was found for the given key")
 )
 
 type GDStore struct {
@@ -29,11 +24,9 @@ func New(filePath string) *GDStore {
 	return store
 }
 
-func (store *GDStore) Get(key string) ([]byte, error) {
-	if value, ok := store.data[key]; ok {
-		return value, nil
-	}
-	return nil, ErrNotFound
+func (store *GDStore) Get(key string) (value []byte, ok bool) {
+	value, ok = store.data[key]
+	return
 }
 
 func (store *GDStore) Put(key string, value []byte) error {

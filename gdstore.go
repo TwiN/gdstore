@@ -5,11 +5,13 @@ import (
 	"encoding/gob"
 	"io/ioutil"
 	"os"
+	"sync"
 )
 
 type GDStore struct {
 	FilePath string
 	data     map[string][]byte
+	mux      sync.Mutex
 }
 
 func New(filePath string) *GDStore {
@@ -30,16 +32,31 @@ func (store *GDStore) Get(key string) (value []byte, ok bool) {
 }
 
 func (store *GDStore) Put(key string, value []byte) error {
+	store.mux.Lock()
+	defer store.mux.Unlock()
 	store.data[key] = value
 	return store.saveToDisk()
 }
 
+func (store *GDStore) PutAll(entries map[string][]byte) error {
+	store.mux.Lock()
+	defer store.mux.Unlock()
+	for key, value := range entries {
+		store.data[key] = value
+	}
+	return store.saveToDisk()
+}
+
 func (store *GDStore) Delete(key string) error {
+	store.mux.Lock()
+	defer store.mux.Unlock()
 	delete(store.data, key)
 	return store.saveToDisk()
 }
 
 func (store *GDStore) Count() int {
+	store.mux.Lock()
+	defer store.mux.Unlock()
 	return len(store.data)
 }
 

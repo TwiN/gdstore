@@ -21,8 +21,8 @@ this is definitely what you're looking for.
 
 ## Motivation
 
-Why does this library exist? Because a lot of other options exists, but they felt overkill
-for persisting 
+Why does this library exist? Because the numerous other options that currently exists
+were very overkill for simple use cases.
 
 
 ## Usage

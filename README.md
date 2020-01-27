@@ -9,24 +9,45 @@ alternatives, but if you're searching for a simple way to persist key-value entr
 this is definitely what you're looking for.
 
 
-## Write
+
+## Table of Contents
+
+- [Motivation](#motivation)
+- [Usage](#usage)
+    - [Write](#write)
+    - [Read](#read)
+    - [Delete](#delete)
+
+
+## Motivation
+
+Why does this library exist? Because a lot of other options exists, but they felt overkill
+for persisting 
+
+
+## Usage
 
 ```go
-
+store := New("store.db")
 ```
 
 
-## Read
+### Write
 
 ```go
-
+err := store.Put("key", []byte("value"))
 ```
 
 
-## Delete
+### Read
 
 ```go
-
+value, exists := store.Get("key")
 ```
 
 
+### Delete
+
+```go
+err := store.Delete("key")
+```

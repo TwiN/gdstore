@@ -1,6 +1,12 @@
 package main
 
-import "errors"
+import (
+	"bytes"
+	"encoding/gob"
+	"errors"
+	"io/ioutil"
+	"os"
+)
 
 var (
 	ErrNotFound = errors.New("no data was found for the given key")
@@ -16,7 +22,10 @@ func New(filePath string) *GDStore {
 		FilePath: filePath,
 		data:     make(map[string][]byte),
 	}
-	store.loadFromDisk()
+	err := store.loadFromDisk()
+	if err != nil {
+		panic(err)
+	}
 	return store
 }
 
@@ -42,9 +51,25 @@ func (store *GDStore) Count() int {
 }
 
 func (store *GDStore) saveToDisk() error {
-	return nil
+	buffer := new(bytes.Buffer)
+	encoder := gob.NewEncoder(buffer)
+	err := encoder.Encode(store.data)
+	if err != nil {
+		return err
+	}
+	return ioutil.WriteFile(store.FilePath, buffer.Bytes(), os.ModePerm)
 }
 
-func (store *GDStore) loadFromDisk() {
-
+func (store *GDStore) loadFromDisk() error {
+	b, err := ioutil.ReadFile(store.FilePath)
+	if os.IsNotExist(err) {
+		// A new file will be created on first persist, so we can ignore this error
+		store.data = make(map[string][]byte)
+		return nil
+	} else {
+		buffer := new(bytes.Buffer)
+		buffer.Write(b)
+		decoder := gob.NewDecoder(buffer)
+		return decoder.Decode(&store.data)
+	}
 }

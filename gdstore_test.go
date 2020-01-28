@@ -107,6 +107,16 @@ func TestPutAll(t *testing.T) {
 //	}
 //}
 
+func TestPutThenDelete(t *testing.T) {
+	store := New(TestStoreFile)
+	defer deleteStoreFile(store)
+	checkKeyNotExists(t, store, "key")
+	_ = store.Put("key", []byte("value"))
+	checkValueForKey(t, store, "key", []byte("value"))
+	_ = store.Delete("key")
+	checkKeyNotExists(t, store, "key")
+}
+
 func checkValueForKey(t *testing.T, store *GDStore, key string, expectedValue []byte) {
 	value, exists := store.Get(key)
 	if !exists {

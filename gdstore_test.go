@@ -12,6 +12,9 @@ const (
 func TestNew(t *testing.T) {
 	store := New(TestStoreFile)
 	defer deleteStoreFile(store)
+	if store == nil {
+		t.Error("Store shouldn't have returned nil")
+	}
 }
 
 func TestNewWithExistingStoreFile(t *testing.T) {

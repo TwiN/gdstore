@@ -38,12 +38,16 @@ store := New("store.db")
 err := store.Put("key", []byte("value"))
 ```
 
+Writes are slow. If you can write in bulk, use `PutAll` instead.
+
 
 ### Read
 
 ```go
 value, exists := store.Get("key")
 ```
+
+Even writes are slow, the data is stored in-memory, so read operations are fast.
 
 
 ### Delete

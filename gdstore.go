@@ -67,7 +67,7 @@ func (store *GDStore) saveToDisk() error {
 	if err != nil {
 		return err
 	}
-	return ioutil.WriteFile(store.FilePath, buffer.Bytes(), os.ModePerm)
+	return ioutil.WriteFile(store.FilePath, buffer.Bytes(), 0644)
 }
 
 func (store *GDStore) loadFromDisk() error {

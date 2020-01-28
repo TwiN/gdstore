@@ -61,6 +61,49 @@ func TestPutNilValue(t *testing.T) {
 	checkValueForKey(t, store, "test", nil)
 }
 
+//func TestPutPerf(t *testing.T) {
+//	store := New(TestStoreFile)
+//	defer deleteStoreFile(store)
+//	start := time.Now()
+//	for i := 0; i < 1000; i++ {
+//		_ = store.Put(fmt.Sprintf("test_%d", i), []byte("hello"))
+//	}
+//	end := time.Since(start)
+//	t.Errorf("Took %s", end)
+//}
+
+func TestPutAll(t *testing.T) {
+	store := New(TestStoreFile)
+	defer deleteStoreFile(store)
+	entries := map[string][]byte{
+		"1": []byte("apple"),
+		"2": []byte("banana"),
+		"3": []byte("orange"),
+	}
+	checkKeyNotExists(t, store, "1")
+	checkKeyNotExists(t, store, "2")
+	checkKeyNotExists(t, store, "3")
+	_ = store.PutAll(entries)
+	checkValueForKey(t, store, "1", []byte("apple"))
+	checkValueForKey(t, store, "2", []byte("banana"))
+	checkValueForKey(t, store, "3", []byte("orange"))
+}
+
+//func TestPutAllPerf(t *testing.T) {
+//	store := New(TestStoreFile)
+//	defer deleteStoreFile(store)
+//	entries := make(map[string][]byte)
+//	for i := 0; i < 10000; i++ {
+//		entries[fmt.Sprintf("test_%d", i)] = []byte("hello")
+//	}
+//	start := time.Now()
+//	_ = store.PutAll(entries)
+//	end := time.Since(start)
+//	if end > 500 * time.Millisecond {
+//		t.Errorf("Took too long (%s)", end)
+//	}
+//}
+
 func checkValueForKey(t *testing.T, store *GDStore, key string, expectedValue []byte) {
 	value, exists := store.Get(key)
 	if !exists {
@@ -68,6 +111,12 @@ func checkValueForKey(t *testing.T, store *GDStore, key string, expectedValue []
 	}
 	if string(value) != string(expectedValue) {
 		t.Errorf("[%s] Expected key '%s' to have value '%v', but had '%v' instead", t.Name(), key, expectedValue, value)
+	}
+}
+
+func checkKeyNotExists(t *testing.T, store *GDStore, key string) {
+	if _, exists := store.Get(key); exists {
+		t.Errorf("[%s] Expected key '%s' to not exist", t.Name(), key)
 	}
 }
 

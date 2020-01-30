@@ -38,7 +38,16 @@ store := New("store.db")
 err := store.Put("key", []byte("value"))
 ```
 
-Writes are slow. If you can write in bulk, use `PutAll` instead.
+Writes are slow; if you can write in bulk, use `PutAll` instead.
+
+```go
+entries := map[string][]byte{
+	"1": []byte("apple"),
+	"2": []byte("banana"),
+	"3": []byte("orange"),
+}
+err := store.PutAll(entries)
+```
 
 
 ### Read
@@ -47,7 +56,7 @@ Writes are slow. If you can write in bulk, use `PutAll` instead.
 value, exists := store.Get("key")
 ```
 
-Even writes are slow, the data is stored in-memory, so read operations are fast.
+Even though writes are slow, the data is stored in-memory, so read operations are fast.
 
 
 ### Delete

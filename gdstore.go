@@ -61,6 +61,7 @@ func (store *GDStore) Count() int {
 }
 
 func (store *GDStore) saveToDisk() error {
+	// TODO: Save entry by entry instead of saving the entire map object?
 	buffer := new(bytes.Buffer)
 	encoder := gob.NewEncoder(buffer)
 	err := encoder.Encode(store.data)

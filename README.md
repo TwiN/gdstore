@@ -29,6 +29,7 @@ were very overkill for simple use cases.
 
 ```go
 store := New("store.db")
+defer store.Close()
 ```
 
 
@@ -38,7 +39,7 @@ store := New("store.db")
 err := store.Put("key", []byte("value"))
 ```
 
-Writes are slow; if you can write in bulk, use `PutAll` instead.
+If you can write in bulk, use `PutAll` instead.
 
 ```go
 entries := map[string][]byte{
@@ -56,7 +57,7 @@ err := store.PutAll(entries)
 value, exists := store.Get("key")
 ```
 
-Even though writes are slow, the data is stored in-memory, so read operations are fast.
+While the data is always persisted on disk, the data is also stored in-memory, so read operations are fast.
 
 
 ### Delete

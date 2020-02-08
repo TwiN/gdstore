@@ -2,112 +2,54 @@ package main
 
 import (
 	"bufio"
-	"encoding/base64"
 	"errors"
 	"fmt"
 	"os"
-	"strings"
 )
 
-type Action string
-
-var (
-	ActionPut    Action = "SET"
-	ActionDelete Action = "DEL"
-
-	ErrCannotDecodeElement = errors.New("failed to decode element")
-)
-
-type Entry struct {
-	Action Action
-	Key    string
-	Value  []byte
-}
-
-func (e Entry) ToLine() []byte {
-	encodedKeyChannel := make(chan string)
-	encodedValueChannel := make(chan string)
-	go func() {
-		encodedKeyChannel <- base64.StdEncoding.EncodeToString([]byte(e.Key))
-	}()
-	go func() {
-		encodedValueChannel <- base64.StdEncoding.EncodeToString(e.Value)
-	}()
-	return []byte(fmt.Sprintf("%s,%s,%s\n", e.Action, <-encodedKeyChannel, <-encodedValueChannel))
-}
-
-func newEntry(action Action, key string, value []byte) *Entry {
-	return &Entry{
-		Action: action,
-		Key:    key,
-		Value:  value,
-	}
-}
-
-func newBulkEntries(action Action, keyValues map[string][]byte) []*Entry {
-	var entries []*Entry
-	for k, v := range keyValues {
-		entries = append(entries, &Entry{
-			Action: action,
-			Key:    k,
-			Value:  v,
-		})
-	}
-	return entries
-}
-
-func newEntryFromLine(line string) (*Entry, error) {
-	elements := strings.Split(line, ",")
-
-	keyAsBytes, err := base64.StdEncoding.DecodeString(elements[1])
+// Consolidate combines all entries recorded in the file and re-saves only the necessary entries.
+// The function is executed on creation, but can also be executed manually if storage space is a concern.
+// The original file is backed up.
+func (store *GDStore) Consolidate() error {
+	// Close the file because we need to rename it
+	store.Close()
+	// Back up the old file before doing the consolidation
+	err := os.Rename(store.FilePath, fmt.Sprintf("%s.bak", store.FilePath))
 	if err != nil {
-		return nil, ErrCannotDecodeElement
+		return errors.New(fmt.Sprintf("unable to rename %s to %s.bak during consolidation: %s", store.FilePath, store.FilePath, err.Error()))
 	}
-	key := string(keyAsBytes)
-
-	value, err := base64.StdEncoding.DecodeString(elements[2])
+	// Create a new empty file
+	file, err := os.Create(store.FilePath)
 	if err != nil {
-		return nil, ErrCannotDecodeElement
+		return errors.New(fmt.Sprintf("unable to create new empty file at %s during consolidation: %s", store.FilePath, err.Error()))
 	}
-
-	return &Entry{
-		Action: Action(elements[0]),
-		Key:    key,
-		Value:  value,
-	}, nil
-}
-
-// appendEntry appends an action to the file
-func (store GDStore) appendEntry(entry *Entry) error {
-	return store.appendEntries([]*Entry{entry})
-}
-
-func (store GDStore) appendEntries(entries []*Entry) error {
-	file, err := os.OpenFile(store.FilePath, os.O_APPEND|os.O_CREATE|os.O_WRONLY, 0644)
+	err = file.Close()
 	if err != nil {
-		return err
+		panic(err)
 	}
-	defer file.Close()
-	for _, entry := range entries {
-		_, err = file.Write(entry.ToLine())
-		if err != nil {
-			return err
-		}
-	}
-	return nil
+	// Close store.file AFTER appending all entries to the new file (hence defer)
+	defer store.Close()
+	return store.appendEntriesToFile(newBulkEntries(ActionPut, store.data))
 }
 
 // loadFromDisk loads the store from the disk and consolidates the entries, or creates an empty file if there is no file
 func (store *GDStore) loadFromDisk() error {
 	store.data = make(map[string][]byte)
 	file, err := os.Open(store.FilePath)
-	if os.IsNotExist(err) {
-		file, err := os.Create(store.FilePath)
-		if err != nil {
+	if err != nil {
+		// Check if the file exists, if it doesn't, then create it and return.
+		if os.IsNotExist(err) {
+			file, err := os.Create(store.FilePath)
+			if err != nil {
+				return err
+			}
+			return file.Close()
+		} else {
 			return err
 		}
-		return file.Close()
 	}
+
+	// File doesn't exist, so we need to read it.
 	scanner := bufio.NewScanner(file)
 	for scanner.Scan() {
 		entry, err := newEntryFromLine(scanner.Text())
@@ -120,8 +62,28 @@ func (store *GDStore) loadFromDisk() error {
 			delete(store.data, entry.Key)
 		}
 	}
-	// Close it now - even if defer will close it again.
-	// The file needs to be closed for store.Consolidate()
 	_ = file.Close()
 	return store.Consolidate()
+}
+
+// appendEntryToFile appends an entry to the store's file
+func (store *GDStore) appendEntryToFile(entry *Entry) error {
+	return store.appendEntriesToFile([]*Entry{entry})
+}
+
+// appendEntriesToFile appends a list of entries to the store's file
+func (store *GDStore) appendEntriesToFile(entries []*Entry) (err error) {
+	if store.file == nil {
+		store.file, err = os.OpenFile(store.FilePath, os.O_APPEND|os.O_CREATE|os.O_WRONLY, 0644)
+		if err != nil {
+			return
+		}
+	}
+	for _, entry := range entries {
+		_, err = store.file.Write(entry.toLine())
+		if err != nil {
+			return
+		}
+	}
+	return
 }

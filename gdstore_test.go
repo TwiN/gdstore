@@ -14,6 +14,8 @@ func TestNew(t *testing.T) {
 	defer deleteStoreFile(store)
 	if store == nil {
 		t.Error("Store shouldn't have returned nil")
+	} else {
+		store.Close()
 	}
 }
 
@@ -26,11 +28,16 @@ func TestNewWithExistingStoreFile(t *testing.T) {
 	}
 	_ = store.Put("test1", []byte("..."))
 	_ = store.Put("test2", []byte("..."))
+	_ = store.Put("test3", []byte("..."))
+	_ = store.Delete("test3")
+	store.Close()
+
 	// Check if the previous store was persisted to the file
 	store = New(TestStoreFile)
 	if store.Count() != 2 {
 		t.Errorf("Expected to have 2 entries, but got %d instead", store.Count())
 	}
+	store.Close()
 }
 
 func TestCount(t *testing.T) {
@@ -44,9 +51,18 @@ func TestCount(t *testing.T) {
 	if numberOfEntries != expectedNumberOfEntries {
 		t.Errorf("Expected to have %d entries, but got %d", expectedNumberOfEntries, numberOfEntries)
 	}
+	store.Close()
 }
 
 func TestPut(t *testing.T) {
+	store := New(TestStoreFile)
+	defer deleteStoreFile(store)
+	_ = store.Put("key", []byte("value"))
+	checkValueForKey(t, store, "key", []byte("value"))
+	store.Close()
+}
+
+func TestPutMultiple(t *testing.T) {
 	store := New(TestStoreFile)
 	defer deleteStoreFile(store)
 	_ = store.Put("test1", []byte("hello"))
@@ -55,6 +71,7 @@ func TestPut(t *testing.T) {
 	checkValueForKey(t, store, "test2", []byte("hey"))
 	_ = store.Put("test3", []byte("hi"))
 	checkValueForKey(t, store, "test3", []byte("hi"))
+	store.Close()
 }
 
 func TestPutNilValue(t *testing.T) {
@@ -62,6 +79,7 @@ func TestPutNilValue(t *testing.T) {
 	defer deleteStoreFile(store)
 	_ = store.Put("test", nil)
 	checkValueForKey(t, store, "test", nil)
+	store.Close()
 }
 
 //func TestPutPerf(t *testing.T) {
@@ -72,7 +90,8 @@ func TestPutNilValue(t *testing.T) {
 //		_ = store.Put(fmt.Sprintf("test_%d", i), []byte("hello"))
 //	}
 //	end := time.Since(start)
-//	t.Errorf("Took %s", end)
+//	t.Logf("Took %s", end)
+//  store.Close()
 //}
 
 func TestPutAll(t *testing.T) {
@@ -90,6 +109,7 @@ func TestPutAll(t *testing.T) {
 	checkValueForKey(t, store, "1", []byte("apple"))
 	checkValueForKey(t, store, "2", []byte("banana"))
 	checkValueForKey(t, store, "3", []byte("orange"))
+	store.Close()
 }
 
 //func TestPutAllPerf(t *testing.T) {
@@ -115,6 +135,7 @@ func TestPutThenDelete(t *testing.T) {
 	checkValueForKey(t, store, "key", []byte("value"))
 	_ = store.Delete("key")
 	checkKeyNotExists(t, store, "key")
+	store.Close()
 }
 
 func checkValueForKey(t *testing.T, store *GDStore, key string, expectedValue []byte) {
@@ -134,5 +155,8 @@ func checkKeyNotExists(t *testing.T, store *GDStore, key string) {
 }
 
 func deleteStoreFile(store *GDStore) {
-	_ = os.Remove(store.FilePath)
+	err := os.Remove(store.FilePath)
+	if err != nil {
+		panic(err)
+	}
 }

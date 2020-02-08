@@ -1,9 +1,8 @@
 package main
 
 import (
-	"bytes"
-	"encoding/gob"
-	"io/ioutil"
+	"errors"
+	"fmt"
 	"os"
 	"sync"
 )
@@ -35,7 +34,7 @@ func (store *GDStore) Put(key string, value []byte) error {
 	store.mux.Lock()
 	defer store.mux.Unlock()
 	store.data[key] = value
-	return store.saveToDisk()
+	return store.appendEntry(newEntry(ActionPut, key, value))
 }
 
 func (store *GDStore) PutAll(entries map[string][]byte) error {
@@ -44,14 +43,14 @@ func (store *GDStore) PutAll(entries map[string][]byte) error {
 	for key, value := range entries {
 		store.data[key] = value
 	}
-	return store.saveToDisk()
+	return store.appendEntries(newBulkEntries(ActionPut, entries))
 }
 
 func (store *GDStore) Delete(key string) error {
 	store.mux.Lock()
 	defer store.mux.Unlock()
 	delete(store.data, key)
-	return store.saveToDisk()
+	return store.appendEntry(newEntry(ActionDelete, key, nil))
 }
 
 func (store *GDStore) Count() int {
@@ -60,27 +59,22 @@ func (store *GDStore) Count() int {
 	return len(store.data)
 }
 
-func (store *GDStore) saveToDisk() error {
-	// TODO: Save entry by entry instead of saving the entire map object?
-	buffer := new(bytes.Buffer)
-	encoder := gob.NewEncoder(buffer)
-	err := encoder.Encode(store.data)
+// Consolidate combines all entries recorded in the file and re-saves only the necessary entries
+// The original file is backed up.
+//
+// The function is automatically executed on creation, but can also be ran during operation if
+// storage space is a concern
+func (store *GDStore) Consolidate() error {
+	// Back up the old file before doing the consolidation
+	err := os.Rename(store.FilePath, fmt.Sprintf("%s.bak", store.FilePath))
 	if err != nil {
-		return err
+		return errors.New(fmt.Sprintf("unable to rename %s to %s.bak during consolidation: %s", store.FilePath, store.FilePath, err.Error()))
 	}
-	return ioutil.WriteFile(store.FilePath, buffer.Bytes(), 0644)
-}
-
-func (store *GDStore) loadFromDisk() error {
-	b, err := ioutil.ReadFile(store.FilePath)
-	if os.IsNotExist(err) {
-		// A new file will be created on first persist, so we can ignore this error
-		store.data = make(map[string][]byte)
-		return nil
-	} else {
-		buffer := new(bytes.Buffer)
-		buffer.Write(b)
-		decoder := gob.NewDecoder(buffer)
-		return decoder.Decode(&store.data)
+	// Create a new empty file
+	file, err := os.Create(store.FilePath)
+	if err != nil {
+		return errors.New(fmt.Sprintf("unable to create new empty file at %s during consolidation: %s", store.FilePath, err.Error()))
 	}
+	_ = file.Close()
+	return store.appendEntries(newBulkEntries(ActionPut, store.data))
 }

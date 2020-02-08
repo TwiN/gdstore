@@ -3,6 +3,7 @@ package main
 import (
 	"fmt"
 	"os"
+	"sync"
 	"testing"
 )
 
@@ -136,6 +137,21 @@ func TestGDStore_PutThenDelete(t *testing.T) {
 	checkValueForKey(t, store, "key", []byte("value"))
 	_ = store.Delete("key")
 	checkKeyNotExists(t, store, "key")
+	store.Close()
+}
+
+func TestGDStore_PutConcurrent(t *testing.T) {
+	store := New(TestStoreFile)
+	defer deleteTestStoreFile()
+	var wg sync.WaitGroup
+	wg.Add(100)
+	for i := 0; i < 100; i++ {
+		go func(i int) {
+			defer wg.Done()
+			_ = store.Put(fmt.Sprintf("k%d", i), nil)
+		}(i)
+	}
+	wg.Wait()
 	store.Close()
 }
 

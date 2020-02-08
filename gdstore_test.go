@@ -1,6 +1,7 @@
 package main
 
 import (
+	"fmt"
 	"os"
 	"testing"
 )
@@ -11,7 +12,7 @@ const (
 
 func TestNew(t *testing.T) {
 	store := New(TestStoreFile)
-	defer deleteStoreFile(store)
+	defer deleteTestStoreFile()
 	if store == nil {
 		t.Error("Store shouldn't have returned nil")
 	} else {
@@ -22,7 +23,7 @@ func TestNew(t *testing.T) {
 func TestNewWithExistingStoreFile(t *testing.T) {
 	// Create a store file
 	store := New(TestStoreFile)
-	defer deleteStoreFile(store)
+	defer deleteTestStoreFile()
 	if store.Count() != 0 {
 		t.Errorf("Expected to have 0 entries, but got %d instead", store.Count())
 	}
@@ -40,9 +41,9 @@ func TestNewWithExistingStoreFile(t *testing.T) {
 	store.Close()
 }
 
-func TestCount(t *testing.T) {
+func TestGDStore_Count(t *testing.T) {
 	store := New(TestStoreFile)
-	defer deleteStoreFile(store)
+	defer deleteTestStoreFile()
 	_ = store.Put("test1", []byte("hello"))
 	_ = store.Put("test2", []byte("hey"))
 	_ = store.Put("test3", []byte("hi"))
@@ -54,17 +55,17 @@ func TestCount(t *testing.T) {
 	store.Close()
 }
 
-func TestPut(t *testing.T) {
+func TestGDStore_Put(t *testing.T) {
 	store := New(TestStoreFile)
-	defer deleteStoreFile(store)
+	defer deleteTestStoreFile()
 	_ = store.Put("key", []byte("value"))
 	checkValueForKey(t, store, "key", []byte("value"))
 	store.Close()
 }
 
-func TestPutMultiple(t *testing.T) {
+func TestGDStore_PutMultiple(t *testing.T) {
 	store := New(TestStoreFile)
-	defer deleteStoreFile(store)
+	defer deleteTestStoreFile()
 	_ = store.Put("test1", []byte("hello"))
 	checkValueForKey(t, store, "test1", []byte("hello"))
 	_ = store.Put("test2", []byte("hey"))
@@ -74,9 +75,9 @@ func TestPutMultiple(t *testing.T) {
 	store.Close()
 }
 
-func TestPutNilValue(t *testing.T) {
+func TestGDStore_PutNilValue(t *testing.T) {
 	store := New(TestStoreFile)
-	defer deleteStoreFile(store)
+	defer deleteTestStoreFile()
 	_ = store.Put("test", nil)
 	checkValueForKey(t, store, "test", nil)
 	store.Close()
@@ -84,7 +85,7 @@ func TestPutNilValue(t *testing.T) {
 
 //func TestPutPerf(t *testing.T) {
 //	store := New(TestStoreFile)
-//	defer deleteStoreFile(store)
+//	defer deleteTestStoreFile()
 //	start := time.Now()
 //	for i := 0; i < 1000; i++ {
 //		_ = store.Put(fmt.Sprintf("test_%d", i), []byte("hello"))
@@ -94,9 +95,9 @@ func TestPutNilValue(t *testing.T) {
 //  store.Close()
 //}
 
-func TestPutAll(t *testing.T) {
+func TestGDStore_PutAll(t *testing.T) {
 	store := New(TestStoreFile)
-	defer deleteStoreFile(store)
+	defer deleteTestStoreFile()
 	entries := map[string][]byte{
 		"1": []byte("apple"),
 		"2": []byte("banana"),
@@ -112,9 +113,9 @@ func TestPutAll(t *testing.T) {
 	store.Close()
 }
 
-//func TestPutAllPerf(t *testing.T) {
+//func TestGDStore_PutAllPerf(t *testing.T) {
 //	store := New(TestStoreFile)
-//	defer deleteStoreFile(store)
+//	defer deleteTestStoreFile()
 //	entries := make(map[string][]byte)
 //	for i := 0; i < 10000; i++ {
 //		entries[fmt.Sprintf("test_%d", i)] = []byte("hello")
@@ -127,9 +128,9 @@ func TestPutAll(t *testing.T) {
 //	}
 //}
 
-func TestPutThenDelete(t *testing.T) {
+func TestGDStore_PutThenDelete(t *testing.T) {
 	store := New(TestStoreFile)
-	defer deleteStoreFile(store)
+	defer deleteTestStoreFile()
 	checkKeyNotExists(t, store, "key")
 	_ = store.Put("key", []byte("value"))
 	checkValueForKey(t, store, "key", []byte("value"))
@@ -154,9 +155,7 @@ func checkKeyNotExists(t *testing.T, store *GDStore, key string) {
 	}
 }
 
-func deleteStoreFile(store *GDStore) {
-	err := os.Remove(store.FilePath)
-	if err != nil {
-		panic(err)
-	}
+func deleteTestStoreFile() {
+	_ = os.Remove(TestStoreFile)
+	_ = os.Remove(fmt.Sprintf("%s.bak", TestStoreFile))
 }

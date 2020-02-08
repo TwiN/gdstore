@@ -41,6 +41,8 @@ store := New("store.db")
 defer store.Close()
 ```
 
+**NOTE:** You do not have to close the store every time you write in it. Also, the store is automatically opened on write. Closing a store that is already closed has no effect.
+
 
 ### Write
 

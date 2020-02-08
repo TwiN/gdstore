@@ -1,18 +1,18 @@
 # gdstore
 
-**gdstore**, short for **G**o **D**isk store, is a key-value library in Go for persisting data to disk.
+**gdstore**, short for **G**o **D**isk store, is a thread-safe (goroutine-safe) key-value library in Go for 
+persisting data to disk.
 
 This library does not have speed as its main purpose, but rather, ease of use.
+As such, [the configuration required](#usage) is minimal.
 
-If you're looking for a high-performance key-value store/database/cache, there are definitely better
-alternatives, but if you're searching for a simple way to persist key-value entries to disk, then 
-this is definitely what you're looking for.
-
+If you're looking for a high-performance key-value store/database/cache, there are definitely better alternatives, but if you're searching for a simple way to persist key-value entries to disk, then this is definitely what you're looking for.
 
 
 ## Table of Contents
 
 - [Motivation](#motivation)
+- [Features](#features)
 - [Usage](#usage)
     - [Write](#write)
     - [Read](#read)
@@ -23,6 +23,15 @@ this is definitely what you're looking for.
 
 Why does this library exist? Because the numerous other options that currently exists
 were very overkill for simple use cases.
+
+
+## Features
+
+The main features are as follow:
+- **Simple to use**
+- **In-memory**
+- **Persistence**: Every entry is persisted to a single file
+- **Thread safe/Goroutine safe**: You can call the same store concurrently
 
 
 ## Usage
@@ -39,7 +48,7 @@ defer store.Close()
 err := store.Put("key", []byte("value"))
 ```
 
-If you can write in bulk, use `PutAll` instead.
+If prefer to write in bulk, you can use `PutAll`.
 
 ```go
 entries := map[string][]byte{

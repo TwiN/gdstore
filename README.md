@@ -39,8 +39,17 @@ The main features are as follow:
 ## Usage
 
 ```go
-store := gdstore.New("store.db")
-defer store.Close()
+package main
+
+import (
+    "github.com/TwinProduction/gdstore"
+)
+
+func main() {
+    store := gdstore.New("store.db")
+    defer store.Close()
+    // ...
+}
 ```
 
 **NOTE:** You do not have to close the store every time you write in it. Also, the store is automatically opened on write. Closing a store that is already closed has no effect.

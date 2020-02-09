@@ -1,4 +1,4 @@
-package main
+package gdstore
 
 import (
 	"bufio"

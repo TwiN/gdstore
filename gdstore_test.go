@@ -155,6 +155,24 @@ func TestGDStore_PutConcurrent(t *testing.T) {
 	store.Close()
 }
 
+func TestGDStore_Keys(t *testing.T) {
+	store := New(TestStoreFile)
+	defer deleteTestStoreFile()
+	_ = store.Put("1", nil)
+	_ = store.Put("2", nil)
+	_ = store.Put("3", nil)
+	keys := store.Keys()
+	if len(keys) != 3 {
+		t.Errorf("[%s] Expected 3 keys, got %d instead", t.Name(), len(keys))
+	}
+	for _, key := range keys {
+		if key != "1" && key != "2" && key != "3" {
+			t.Errorf("[%s] Expected keys to be '1', '2' or '3', but got '%s' instead", t.Name(), key)
+		}
+	}
+	store.Close()
+}
+
 func checkValueForKey(t *testing.T, store *GDStore, key string, expectedValue []byte) {
 	value, exists := store.Get(key)
 	if !exists {

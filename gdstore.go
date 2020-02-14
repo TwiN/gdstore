@@ -65,6 +65,19 @@ func (store *GDStore) Count() int {
 	return len(store.data)
 }
 
+// Keys returns a list of all keys
+func (store *GDStore) Keys() []string {
+	store.mux.Lock()
+	defer store.mux.Unlock()
+	keys := make([]string, len(store.data))
+	i := 0
+	for k := range store.data {
+		keys[i] = k
+		i++
+	}
+	return keys
+}
+
 // Close closes the store's file if it isn't already closed.
 // Note that any write actions, such as the usage of Put and PutAll, will automatically re-open the store.
 func (store *GDStore) Close() {

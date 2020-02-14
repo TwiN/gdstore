@@ -2,6 +2,7 @@ package gdstore
 
 import (
 	"os"
+	"strconv"
 	"sync"
 )
 
@@ -29,6 +30,26 @@ func New(filePath string) *GDStore {
 // key that doesn't exist
 func (store *GDStore) Get(key string) (value []byte, ok bool) {
 	value, ok = store.data[key]
+	return
+}
+
+// GetString does the same thing as Get, but converts the value to a string
+func (store *GDStore) GetString(key string) (valueAsString string, ok bool) {
+	var value []byte
+	value, ok = store.data[key]
+	if ok {
+		valueAsString = string(value)
+	}
+	return
+}
+
+// GetInt does the same thing as Get, but converts the value to an int
+func (store *GDStore) GetInt(key string) (valueAsInt int, ok bool, err error) {
+	var value string
+	value, ok = store.GetString(key)
+	if ok {
+		valueAsInt, err = strconv.Atoi(value)
+	}
 	return
 }
 

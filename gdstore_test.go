@@ -173,6 +173,48 @@ func TestGDStore_Keys(t *testing.T) {
 	store.Close()
 }
 
+func TestGDStore_GetInt(t *testing.T) {
+	store := New(TestStoreFile)
+	defer deleteTestStoreFile()
+	_ = store.Put("test", []byte("42"))
+	number, ok, err := store.GetInt("test")
+	if !ok || err != nil {
+		t.Errorf("[%s] Expected key 'test' to exist and not be return an error", t.Name())
+	}
+	if number != 42 {
+		t.Errorf("[%s] Expected key 'test' to have value '42', but got '%d' instead", t.Name(), number)
+	}
+	store.Close()
+}
+
+func TestGDStore_GetIntWithNegativeNumber(t *testing.T) {
+	store := New(TestStoreFile)
+	defer deleteTestStoreFile()
+	_ = store.Put("test", []byte("-42"))
+	number, ok, err := store.GetInt("test")
+	if !ok || err != nil {
+		t.Errorf("[%s] Expected key 'test' to exist and not be return an error", t.Name())
+	}
+	if number != -42 {
+		t.Errorf("[%s] Expected key 'test' to have value '-42', but got '%d' instead", t.Name(), number)
+	}
+	store.Close()
+}
+
+func TestGDStore_GetIntWithNonInt(t *testing.T) {
+	store := New(TestStoreFile)
+	defer deleteTestStoreFile()
+	_ = store.Put("test", []byte("NaN"))
+	_, ok, err := store.GetInt("test")
+	if !ok {
+		t.Errorf("[%s] Expected key 'test' to exist", t.Name())
+	}
+	if err == nil {
+		t.Errorf("[%s] Expected key 'test' to return an error because the value is not an int", t.Name())
+	}
+	store.Close()
+}
+
 func checkValueForKey(t *testing.T, store *GDStore, key string, expectedValue []byte) {
 	value, exists := store.Get(key)
 	if !exists {

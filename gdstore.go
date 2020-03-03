@@ -13,6 +13,7 @@ type GDStore struct {
 	mux      sync.Mutex
 }
 
+// New creates a new GDStore
 func New(filePath string) *GDStore {
 	store := &GDStore{
 		FilePath: filePath,

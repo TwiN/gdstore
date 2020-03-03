@@ -173,6 +173,25 @@ func TestGDStore_Keys(t *testing.T) {
 	store.Close()
 }
 
+func TestGDStore_Values(t *testing.T) {
+	store := New(TestStoreFile)
+	defer deleteTestStoreFile()
+	_ = store.Put("1", []byte("one"))
+	_ = store.Put("2", []byte("two"))
+	_ = store.Put("3", []byte("three"))
+	values := store.Values()
+	if len(values) != 3 {
+		t.Errorf("[%s] Expected 3 values, got %d instead", t.Name(), len(values))
+	}
+	for _, value := range values {
+		valueAsString := string(value)
+		if valueAsString != "one" && valueAsString != "two" && valueAsString != "three" {
+			t.Errorf("[%s] Expected values to be '1', '2' or '3', but got '%s' instead", t.Name(), value)
+		}
+	}
+	store.Close()
+}
+
 func TestGDStore_GetInt(t *testing.T) {
 	store := New(TestStoreFile)
 	defer deleteTestStoreFile()

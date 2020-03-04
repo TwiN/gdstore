@@ -12,12 +12,25 @@ const (
 )
 
 func TestNew(t *testing.T) {
+	// Make sure the test store file doesn't exist
+	_, err := os.Stat(TestStoreFile)
+	if !os.IsNotExist(err) {
+		t.Error("Store file shouldn't exist yet")
+	}
+
+	// Create a new store
 	store := New(TestStoreFile)
 	defer deleteTestStoreFile()
 	if store == nil {
 		t.Error("Store shouldn't have returned nil")
 	} else {
 		store.Close()
+	}
+
+	// Check if the test store file exists
+	_, err = os.Stat(TestStoreFile)
+	if os.IsNotExist(err) {
+		t.Error("Store file should exist")
 	}
 }
 

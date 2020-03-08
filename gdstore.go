@@ -7,10 +7,12 @@ import (
 )
 
 type GDStore struct {
+	// FilePath is the path to the file used to persist
 	FilePath string
-	file     *os.File
-	data     map[string][]byte
-	mux      sync.Mutex
+
+	file *os.File
+	data map[string][]byte
+	mux  sync.Mutex
 }
 
 // New creates a new GDStore

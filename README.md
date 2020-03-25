@@ -1,5 +1,7 @@
 # gdstore
 
+![Build](https://github.com/TwinProduction/gdstore/workflows/build/badge.svg?branch=master)
+
 **gdstore**, short for **G**o **D**isk store, is a thread-safe (goroutine-safe) key-value library in Go for 
 persisting data to disk.
 

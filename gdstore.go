@@ -132,31 +132,3 @@ func (store *GDStore) Values() [][]byte {
 	}
 	return values
 }
-
-// Close closes the store's file if it isn't already closed. Will also flush to buffer if useBuffer is true.
-// Note that any write actions, such as the usage of Put and PutAll, will automatically re-open the store.
-func (store *GDStore) Close() {
-	if store.file != nil {
-		errWriter := store.Flush()
-		// even if the writer returns an error, we still want to close the file
-		errFile := store.file.Close()
-		if errWriter != nil {
-			panic(errWriter)
-		}
-		store.file = nil
-		store.writer = nil
-		if errFile != nil {
-			panic(errFile)
-		}
-	}
-}
-
-// Flush flushes the buffer to the file. Does nothing if useBuffer is false.
-// Note that you do not need to call this if you can ensure that your store
-// is closed before your application exists
-func (store *GDStore) Flush() error {
-	if store.writer != nil {
-		return store.writer.Flush()
-	}
-	return nil
-}

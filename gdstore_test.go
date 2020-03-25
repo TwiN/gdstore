@@ -247,6 +247,57 @@ func TestGDStore_GetIntWithNonInt(t *testing.T) {
 	store.Close()
 }
 
+////////////////
+// BENCHMARKS //
+////////////////
+
+func BenchmarkGDStore_Put(b *testing.B) {
+	store := New(TestStoreFile)
+	defer deleteTestStoreFile()
+	for n := 0; n < b.N; n++ {
+		_ = store.Put(fmt.Sprintf("test_%d", n), []byte("value"))
+	}
+	store.Close()
+}
+
+func BenchmarkGDStore_PutWithLargeValue(b *testing.B) {
+	store := New(TestStoreFile)
+	defer deleteTestStoreFile()
+	for n := 0; n < b.N; n++ {
+		_ = store.Put(fmt.Sprintf("test_%d", n), []byte("large_value_large_value_large_value_large_value_large_value_large_value_large_value_large_value_large_value_large_value_large_value_large_value_large_value_large_value_large_value_large_value_large_value_large_value_large_value_large_value_large_value_large_value_large_value_large_value_large_value_large_value_large_value_large_value_large_value_large_value_large_value_large_value_large_value_large_value_large_value_large_value_large_value_large_value_large_value_large_value_large_value_large_value_large_value_large_value_large_value_large_value_large_value_large_value_large_value_large_value_large_value_large_value_large_value_large_value_large_value_large_value_large_value_large_value_large_value_large_value_large_value_large_value_large_value_large_value_large_value_large_value_large_value_large_value_large_value_large_value_large_value_large_value_large_value_large_value_large_value_large_value_large_value_large_value_large_value_large_value_large_value_large_value_large_value_large_value_large_value_large_value_large_value_large_value_large_value_large_value_large_value_large_value_large_value"))
+	}
+	store.Close()
+}
+
+func BenchmarkGDStore_PutWithBuffer(b *testing.B) {
+	store := NewWithBuffer(TestStoreFile)
+	defer deleteTestStoreFile()
+	for n := 0; n < b.N; n++ {
+		_ = store.Put(fmt.Sprintf("test_%d", n), []byte("value"))
+	}
+	store.Close()
+}
+
+func BenchmarkGDStore_PutWithBufferAndLargeValue(b *testing.B) {
+	store := NewWithBuffer(TestStoreFile)
+	defer deleteTestStoreFile()
+	for n := 0; n < b.N; n++ {
+		_ = store.Put(fmt.Sprintf("test_%d", n), []byte("large_value_large_value_large_value_large_value_large_value_large_value_large_value_large_value_large_value_large_value_large_value_large_value_large_value_large_value_large_value_large_value_large_value_large_value_large_value_large_value_large_value_large_value_large_value_large_value_large_value_large_value_large_value_large_value_large_value_large_value_large_value_large_value_large_value_large_value_large_value_large_value_large_value_large_value_large_value_large_value_large_value_large_value_large_value_large_value_large_value_large_value_large_value_large_value_large_value_large_value_large_value_large_value_large_value_large_value_large_value_large_value_large_value_large_value_large_value_large_value_large_value_large_value_large_value_large_value_large_value_large_value_large_value_large_value_large_value_large_value_large_value_large_value_large_value_large_value_large_value_large_value_large_value_large_value_large_value_large_value_large_value_large_value_large_value_large_value_large_value_large_value_large_value_large_value_large_value_large_value_large_value_large_value_large_value"))
+	}
+	store.Close()
+}
+
+//func BenchmarkMap(b *testing.B) {
+//	m := make(map[string][]byte)
+//	for n := 0; n < b.N; n++ {
+//		m[fmt.Sprintf("test_%d", n)] = []byte("value")
+//	}
+//}
+
+///////////////////////
+// Utility functions //
+///////////////////////
+
 func checkValueForKey(t *testing.T, store *GDStore, key string, expectedValue []byte) {
 	value, exists := store.Get(key)
 	if !exists {

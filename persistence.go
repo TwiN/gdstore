@@ -11,6 +11,8 @@ import (
 // The function is executed on creation, but can also be executed manually if storage space is a concern.
 // The original file is backed up.
 func (store *GDStore) Consolidate() error {
+	store.mux.Lock()
+	defer store.mux.Unlock()
 	// Close the file because we need to rename it
 	store.Close()
 	// Back up the old file before doing the consolidation
@@ -27,7 +29,8 @@ func (store *GDStore) Consolidate() error {
 	if err != nil {
 		panic(err)
 	}
-	// Close store.file AFTER appending all entries to the new file (hence defer)
+	// Close store AFTER appending all entries to the new file (hence defer)
+	// to make sure all the data is definitely in the new file
 	defer store.Close()
 	return store.appendEntriesToFile(newBulkEntries(ActionPut, store.data))
 }
@@ -78,9 +81,14 @@ func (store *GDStore) appendEntriesToFile(entries []*Entry) (err error) {
 		if err != nil {
 			return
 		}
+		store.writer = bufio.NewWriter(store.file)
 	}
 	for _, entry := range entries {
-		_, err = store.file.Write(entry.toLine())
+		if store.useBuffer {
+			_, err = store.writer.Write(entry.toLine())
+		} else {
+			_, err = store.file.Write(entry.toLine())
+		}
 		if err != nil {
 			return
 		}

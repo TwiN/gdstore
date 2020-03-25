@@ -1,6 +1,7 @@
 package gdstore
 
 import (
+	"bufio"
 	"os"
 	"strconv"
 	"sync"
@@ -10,9 +11,20 @@ type GDStore struct {
 	// FilePath is the path to the file used to persist
 	FilePath string
 
-	file *os.File
-	data map[string][]byte
-	mux  sync.Mutex
+	// useBuffer lets the user define if GDStore should use a buffer, or write directly to the file.
+	//
+	// Writing to a buffer is much faster, but failure to close to the store (GDStore.Close()) will
+	// result in a buffer that hasn't been flushed, meaning some entries may be lost.
+	// You can manually flush the buffer by using GDStore.Flush().
+	//
+	// In contrast, writing to the file without a buffer is slower, but more reliable if your
+	// application is prone to suddenly crashing
+	useBuffer bool
+
+	file   *os.File
+	writer *bufio.Writer
+	data   map[string][]byte
+	mux    sync.Mutex
 }
 
 // New creates a new GDStore
@@ -25,6 +37,12 @@ func New(filePath string) *GDStore {
 	if err != nil {
 		panic(err)
 	}
+	return store
+}
+
+func NewWithBuffer(filePath string) *GDStore {
+	store := New(filePath)
+	store.useBuffer = true
 	return store
 }
 
@@ -115,14 +133,30 @@ func (store *GDStore) Values() [][]byte {
 	return values
 }
 
-// Close closes the store's file if it isn't already closed.
+// Close closes the store's file if it isn't already closed. Will also flush to buffer if useBuffer is true.
 // Note that any write actions, such as the usage of Put and PutAll, will automatically re-open the store.
 func (store *GDStore) Close() {
 	if store.file != nil {
-		err := store.file.Close()
+		errWriter := store.Flush()
+		// even if the writer returns an error, we still want to close the file
+		errFile := store.file.Close()
+		if errWriter != nil {
+			panic(errWriter)
+		}
 		store.file = nil
-		if err != nil {
-			panic(err)
+		store.writer = nil
+		if errFile != nil {
+			panic(errFile)
 		}
 	}
+}
+
+// Flush flushes the buffer to the file. Does nothing if useBuffer is false.
+// Note that you do not need to call this if you can ensure that your store
+// is closed before your application exists
+func (store *GDStore) Flush() error {
+	if store.writer != nil {
+		return store.writer.Flush()
+	}
+	return nil
 }

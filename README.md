@@ -8,6 +8,8 @@ As such, [the configuration required](#usage) is minimal.
 
 If you're looking for a high-performance key-value store/database/cache, there are definitely better alternatives, but if you're searching for a simple way to persist key-value entries to disk, then this is definitely what you're looking for.
 
+See [performance](#performance) for more details.
+
 
 ## Table of Contents
 
@@ -17,6 +19,7 @@ If you're looking for a high-performance key-value store/database/cache, there a
     - [Write](#write)
     - [Read](#read)
     - [Delete](#delete)
+- [Performance](#performance)
 - [FAQ](#faq)
     - [How is data persisted?](#how-is-data-persisted)
 
@@ -87,6 +90,36 @@ While the data is always persisted on disk, the data is also stored in-memory, s
 ```go
 err := store.Delete("key")
 ```
+
+
+## Performance
+
+By default, GDStore will immediately write each entry to a file.
+While this is reliable, in terms of performance, this leaves a lot to be desired.
+
+For those of you looking to squeeze as much performance as possible out of GDStore, you can have it
+use a buffer instead of writing to a file on every write operation by instantiating it with `NewWithBuffer` instead:
+
+```go
+package main
+
+import (
+    "github.com/TwinProduction/gdstore"
+)
+
+func main() {
+    store := gdstore.NewWithBuffer("store.db")
+    defer store.Close()
+    // ...
+}
+```
+
+While using a buffer is much faster than appending to the file immediately, it also comes with a downside:
+Failure to call `store.Close()` when using a buffer may result in the buffer not having its bytes flushed into the file. 
+In other words, if your application is prone to unexpectedly closing, then you can either not use a buffer, or periodically
+call the `store.Flush()` function to reduce the odds of this happening. Note that even if your application unexpectedly 
+crashes, the worst case scenario is that your most recent entries will be missing. This does not affect entries that were
+previously persisted.
 
 
 ## FAQ

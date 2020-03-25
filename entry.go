@@ -18,16 +18,8 @@ type Entry struct {
 	Value  []byte
 }
 
-func (e Entry) toLine() []byte {
-	encodedKeyChannel := make(chan string)
-	encodedValueChannel := make(chan string)
-	go func() {
-		encodedKeyChannel <- base64.StdEncoding.EncodeToString([]byte(e.Key))
-	}()
-	go func() {
-		encodedValueChannel <- base64.StdEncoding.EncodeToString(e.Value)
-	}()
-	return []byte(fmt.Sprintf("%s,%s,%s\n", e.Action, <-encodedKeyChannel, <-encodedValueChannel))
+func (e *Entry) toLine() []byte {
+	return []byte(fmt.Sprintf("%s,%s,%s\n", e.Action, base64.StdEncoding.EncodeToString([]byte(e.Key)), base64.StdEncoding.EncodeToString(e.Value)))
 }
 
 func newEntry(action Action, key string, value []byte) *Entry {

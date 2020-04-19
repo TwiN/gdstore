@@ -44,7 +44,6 @@ func newBulkEntries(action Action, keyValues map[string][]byte) []*Entry {
 
 func newEntryFromLine(line string) (*Entry, error) {
 	elements := strings.Split(line, ",")
-
 	if len(elements) != 3 {
 		return nil, ErrBadLine
 	}

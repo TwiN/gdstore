@@ -99,8 +99,8 @@ err := store.Delete("key")
 By default, GDStore will immediately write each entry to a file.
 While this is reliable, in terms of performance, this leaves a lot to be desired.
 
-For those of you looking to squeeze as much performance as possible out of GDStore, you can have it
-use a buffer instead of writing to a file on every write operation by instantiating it with `NewWithBuffer` instead:
+For those of you looking to squeeze as much performance as possible out of GDStore, you can use 
+a buffer instead of writing to a file on every write operation by instantiating it with `NewWithBuffer` instead:
 
 ```go
 package main

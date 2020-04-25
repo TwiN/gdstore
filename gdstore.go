@@ -40,6 +40,7 @@ func New(filePath string) *GDStore {
 	return store
 }
 
+// NewWithBuffer creates a new GDStore with buffer enabled
 func NewWithBuffer(filePath string) *GDStore {
 	store := New(filePath)
 	store.useBuffer = true

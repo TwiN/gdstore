@@ -40,15 +40,6 @@ func New(filePath string) *GDStore {
 	return store
 }
 
-// NewWithBuffer creates a new GDStore with buffer enabled
-//
-// Replaced in favor of using New(filePath).WithBuffer(true)
-//
-// Deprecated
-func NewWithBuffer(filePath string) *GDStore {
-	return New(filePath).WithBuffer(true)
-}
-
 // WithBuffer sets GDStore's useBuffer parameter to the value passed as parameter
 //
 // The default value for useBuffer is false

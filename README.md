@@ -5,6 +5,8 @@
 **gdstore**, short for **G**o **D**isk store, is a thread-safe (goroutine-safe) key-value library in Go for 
 persisting data to disk.
 
+In English, it's a persistent map.
+
 This library does not have speed as its main purpose, but rather, ease of use.
 As such, [the configuration required](#usage) is minimal.
 
@@ -100,7 +102,7 @@ By default, GDStore will immediately write each entry to a file.
 While this is reliable, in terms of performance, this leaves a lot to be desired.
 
 For those of you looking to squeeze as much performance as possible out of GDStore, you can use 
-a buffer instead of writing to a file on every write operation by instantiating it with `NewWithBuffer` instead:
+a buffer instead of writing to a file on every write operation by instantiating it with `New(...).WithBuffer(true)` instead:
 
 ```go
 package main
@@ -110,7 +112,7 @@ import (
 )
 
 func main() {
-    store := gdstore.NewWithBuffer("store.db")
+    store := gdstore.New("store.db").WithBuffer(true)
     defer store.Close()
     // ...
 }

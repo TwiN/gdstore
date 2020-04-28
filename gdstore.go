@@ -41,13 +41,24 @@ func New(filePath string) *GDStore {
 }
 
 // NewWithBuffer creates a new GDStore with buffer enabled
+//
+// Replaced in favor of using New(filePath).WithBuffer(true)
+//
+// Deprecated
 func NewWithBuffer(filePath string) *GDStore {
-	store := New(filePath)
-	store.useBuffer = true
+	return New(filePath).WithBuffer(true)
+}
+
+// WithBuffer sets GDStore's useBuffer parameter to the value passed as parameter
+//
+// The default value for useBuffer is false
+func (store *GDStore) WithBuffer(useBuffer bool) *GDStore {
+	store.useBuffer = useBuffer
 	return store
 }
 
 // Get returns the value of a key as well as a bool that indicates whether an entry exists for that key.
+//
 // The bool is particularly useful if you want to differentiate between a key that has a nil value, and a
 // key that doesn't exist
 func (store *GDStore) Get(key string) (value []byte, ok bool) {

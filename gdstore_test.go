@@ -270,7 +270,7 @@ func BenchmarkGDStore_PutWithLargeValue(b *testing.B) {
 }
 
 func BenchmarkGDStore_PutWithBuffer(b *testing.B) {
-	store := NewWithBuffer(TestStoreFile)
+	store := New(TestStoreFile).WithBuffer(true)
 	defer deleteTestStoreFile()
 	for n := 0; n < b.N; n++ {
 		_ = store.Put(fmt.Sprintf("test_%d", n), []byte("value"))
@@ -279,7 +279,7 @@ func BenchmarkGDStore_PutWithBuffer(b *testing.B) {
 }
 
 func BenchmarkGDStore_PutWithBufferAndLargeValue(b *testing.B) {
-	store := NewWithBuffer(TestStoreFile)
+	store := New(TestStoreFile).WithBuffer(true)
 	defer deleteTestStoreFile()
 	for n := 0; n < b.N; n++ {
 		_ = store.Put(fmt.Sprintf("test_%d", n), []byte("large_value_large_value_large_value_large_value_large_value_large_value_large_value_large_value_large_value_large_value_large_value_large_value_large_value_large_value_large_value_large_value_large_value_large_value_large_value_large_value_large_value_large_value_large_value_large_value_large_value_large_value_large_value_large_value_large_value_large_value_large_value_large_value_large_value_large_value_large_value_large_value_large_value_large_value_large_value_large_value_large_value_large_value_large_value_large_value_large_value_large_value_large_value_large_value_large_value_large_value_large_value_large_value_large_value_large_value_large_value_large_value_large_value_large_value_large_value_large_value_large_value_large_value_large_value_large_value_large_value_large_value_large_value_large_value_large_value_large_value_large_value_large_value_large_value_large_value_large_value_large_value_large_value_large_value_large_value_large_value_large_value_large_value_large_value_large_value_large_value_large_value_large_value_large_value_large_value_large_value_large_value_large_value_large_value"))

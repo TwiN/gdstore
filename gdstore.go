@@ -19,7 +19,18 @@ type GDStore struct {
 	//
 	// In contrast, writing to the file without a buffer is slower, but more reliable if your
 	// application is prone to suddenly crashing
+	//
+	// Defaults to false
 	useBuffer bool
+
+	// persistence lets the user set whether to persist data to the file or not. Meant to be used for testing without
+	// having to clean up the file.
+	//
+	// (default) If set to true, data is available both in-memory and persisted to the file found at FilePath.
+	// If set to false, data is available only in-memory, and upon destruction, all data will be lost.
+	//
+	// Defaults to true
+	persistence bool
 
 	file   *os.File
 	writer *bufio.Writer
@@ -30,8 +41,9 @@ type GDStore struct {
 // New creates a new GDStore
 func New(filePath string) *GDStore {
 	store := &GDStore{
-		FilePath: filePath,
-		data:     make(map[string][]byte),
+		FilePath:    filePath,
+		data:        make(map[string][]byte),
+		persistence: true,
 	}
 	err := store.loadFromDisk()
 	if err != nil {
@@ -48,6 +60,16 @@ func (store *GDStore) WithBuffer(useBuffer bool) *GDStore {
 	return store
 }
 
+// WithPersistence sets GDStore's persistence parameter to the value passed as parameter
+//
+// The ability to set persistence to false is there mainly for testing purposes
+//
+// The default value for persistence is true
+func (store *GDStore) WithPersistence(persistence bool) *GDStore {
+	store.persistence = persistence
+	return store
+}
+
 // Get returns the value of a key as well as a bool that indicates whether an entry exists for that key.
 //
 // The bool is particularly useful if you want to differentiate between a key that has a nil value, and a
@@ -60,7 +82,7 @@ func (store *GDStore) Get(key string) (value []byte, ok bool) {
 // GetString does the same thing as Get, but converts the value to a string
 func (store *GDStore) GetString(key string) (valueAsString string, ok bool) {
 	var value []byte
-	value, ok = store.data[key]
+	value, ok = store.Get(key)
 	if ok {
 		valueAsString = string(value)
 	}

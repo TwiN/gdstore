@@ -131,7 +131,7 @@ previously persisted.
 ### How is data persisted?
 
 In order to improve the write speed as much as possible, rather than storing the data 
-that currently exists in the store, the _actions_ are stored incrementally.
+that currently exists in the store, the _actions_ (SET, DEL) are stored incrementally.
 
 For instance, say you're creating a key `john` with the value `100` and another key `bob` with the value `500`, and then deleting the key `john`, the file would contain the following events:
 ```
@@ -140,7 +140,8 @@ SET bob 500
 DEL john
 ``` 
 
-On one hand, this has the advantage of not requiring to search in the file for the key `john` and then removing it, which could take an extended period of time, or re-creating a new file with the current data.
+On one hand, this has the advantage of not requiring to search in the file for the key `john` and then removing it, which could take some time based on the size of the store,
+or worse, re-creating a new file with the current data every time there's a write.
 
 On the other hand, if you're storing a large amount of data, depending on your use case, the file where the data is persisted could become large.
 

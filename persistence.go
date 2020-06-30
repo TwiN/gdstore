@@ -57,7 +57,7 @@ func (store *GDStore) Consolidate() error {
 	}
 	err = file.Close()
 	if err != nil {
-		panic(err)
+		return err
 	}
 	// Close store AFTER appending all entries to the new file (hence defer)
 	// to make sure all the data is definitely in the new file

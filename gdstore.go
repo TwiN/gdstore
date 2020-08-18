@@ -35,7 +35,7 @@ type GDStore struct {
 	file   *os.File
 	writer *bufio.Writer
 	data   map[string][]byte
-	mux    sync.Mutex
+	mux    sync.RWMutex
 }
 
 // New creates a new GDStore
@@ -75,7 +75,9 @@ func (store *GDStore) WithPersistence(persistence bool) *GDStore {
 // The bool is particularly useful if you want to differentiate between a key that has a nil value, and a
 // key that doesn't exist
 func (store *GDStore) Get(key string) (value []byte, ok bool) {
+	store.mux.RLock()
 	value, ok = store.data[key]
+	store.mux.RUnlock()
 	return
 }
 
@@ -127,33 +129,34 @@ func (store *GDStore) Delete(key string) error {
 
 // Count returns the total number of entries in the store
 func (store *GDStore) Count() int {
-	store.mux.Lock()
-	defer store.mux.Unlock()
-	return len(store.data)
+	store.mux.RLock()
+	length := len(store.data)
+	store.mux.RUnlock()
+	return length
 }
 
 // Keys returns a list of all keys
 func (store *GDStore) Keys() []string {
 	store.mux.Lock()
-	defer store.mux.Unlock()
 	keys := make([]string, len(store.data))
 	i := 0
 	for k := range store.data {
 		keys[i] = k
 		i++
 	}
+	store.mux.Unlock()
 	return keys
 }
 
 // Values returns a list of all values
 func (store *GDStore) Values() [][]byte {
 	store.mux.Lock()
-	defer store.mux.Unlock()
 	values := make([][]byte, len(store.data))
 	i := 0
 	for _, v := range store.data {
 		values[i] = v
 		i++
 	}
+	store.mux.Unlock()
 	return values
 }

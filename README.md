@@ -15,6 +15,9 @@ If you're looking for a high-performance key-value store/database/cache, there a
 
 See [performance](#performance) for more details.
 
+**NOTE**: If you're looking for performance, you might want to look at https://github.com/TwinProduction/gocache instead.
+gocache focuses more on performance, while gdstore focuses on persistence.
+
 
 ## Table of Contents
 

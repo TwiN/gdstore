@@ -1,3 +1,3 @@
 module github.com/TwinProduction/gdstore
 
-go 1.14
+go 1.15

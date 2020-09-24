@@ -47,18 +47,15 @@ func newEntryFromLine(line string) (*Entry, error) {
 	if len(elements) != 3 {
 		return nil, ErrBadLine
 	}
-
 	keyAsBytes, err := base64.StdEncoding.DecodeString(elements[1])
 	if err != nil {
 		return nil, ErrCannotDecodeElement
 	}
 	key := string(keyAsBytes)
-
 	value, err := base64.StdEncoding.DecodeString(elements[2])
 	if err != nil {
 		return nil, ErrCannotDecodeElement
 	}
-
 	return &Entry{
 		Action: Action(elements[0]),
 		Key:    key,

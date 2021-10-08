@@ -1,3 +1,3 @@
-module github.com/TwinProduction/gdstore
+module github.com/TwiN/gdstore
 
 go 1.15

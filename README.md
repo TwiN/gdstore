@@ -1,7 +1,7 @@
 # gdstore
 
-![Build](https://github.com/TwinProduction/gdstore/workflows/build/badge.svg?branch=master)
-[![Go Report Card](https://goreportcard.com/badge/github.com/TwinProduction/gdstore)](https://goreportcard.com/report/github.com/TwinProduction/gdstore)
+![Build](https://github.com/TwiN/gdstore/workflows/build/badge.svg?branch=master)
+[![Go Report Card](https://goreportcard.com/badge/github.com/TwiN/gdstore)](https://goreportcard.com/report/github.com/TwiN/gdstore)
 
 **gdstore**, short for **G**o **D**isk store, is a thread-safe (goroutine-safe) key-value library in Go for 
 persisting data to disk.
@@ -15,7 +15,7 @@ If you're looking for a high-performance key-value store/database/cache, there a
 
 See [performance](#performance) for more details.
 
-**NOTE**: If you're looking for performance, you might want to look at https://github.com/TwinProduction/gocache instead.
+**NOTE**: If you're looking for performance, you might want to look at https://github.com/TwiN/gocache instead.
 gocache focuses more on performance, while gdstore focuses on persistence.
 
 
@@ -53,7 +53,7 @@ The main features are as follow:
 package main
 
 import (
-    "github.com/TwinProduction/gdstore"
+    "github.com/TwiN/gdstore"
 )
 
 func main() {
@@ -112,7 +112,7 @@ a buffer instead of writing to a file on every write operation by instantiating 
 package main
 
 import (
-    "github.com/TwinProduction/gdstore"
+    "github.com/TwiN/gdstore"
 )
 
 func main() {
